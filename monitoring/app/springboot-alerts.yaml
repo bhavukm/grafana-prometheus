@@ -1,0 +1,39 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: springboot-app-alerts
+  namespace: monitoring
+spec:
+  groups:
+    - name: springboot.rules
+      interval: 30s
+      rules:
+        # JVM Heap Usage
+        - alert: JVMHeapUsageHigh
+          expr: jvm_memory_used_bytes{area="heap"} / jvm_memory_max_bytes{area="heap"} > 0.8
+          for: 2m
+          labels:
+            severity: warning
+          annotations:
+            summary: "JVM Heap usage is high"
+            description: "Heap usage >80% for 2 minutes in {{ $labels.application }} ({{ $labels.instance }})"
+
+        # HTTP 5xx Error Rate
+        - alert: Http5xxErrors
+          expr: rate(http_server_requests_seconds_count{outcome="SERVER_ERROR"}[5m]) > 0
+          for: 1m
+          labels:
+            severity: critical
+          annotations:
+            summary: "Spring Boot app has HTTP 5xx errors"
+            description: "Detected server errors in {{ $labels.application }} ({{ $labels.instance }})"
+
+        # DB Connection Pool Saturation (HikariCP)
+        - alert: DBPoolSaturation
+          expr: hikari_connections_active / hikari_connections_max > 0.9
+          for: 2m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Database connection pool saturation"
+            description: "HikariCP pool usage >90% in {{ $labels.application }} ({{ $labels.instance }})"

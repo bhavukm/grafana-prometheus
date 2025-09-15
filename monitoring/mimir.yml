@@ -1,0 +1,28 @@
+server:
+  http_listen_port: 9009
+
+blocks_storage:
+  backend: filesystem
+  filesystem:
+    dir: /tmp/mimir/tsdb
+
+ingester:
+  wal:
+    dir: /tmp/mimir/wal
+
+limits:
+  ingestion_rate: 100000
+  ingestion_burst_size: 200000
+
+distributor:
+  ring:
+    kvstore:
+      store: inmemory
+
+ingester_client:
+  grpc_client_config:
+    max_send_msg_size: 104857600
+    max_recv_msg_size: 104857600
+
+store_gateway:
+  sharding_enabled: false
